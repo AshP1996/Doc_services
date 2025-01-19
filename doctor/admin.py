@@ -3,7 +3,7 @@ from .models import DoctorProfile, Service, ProfileEntity
 
 @admin.register(DoctorProfile)
 class DoctorProfileAdmin(admin.ModelAdmin):
-    list_display = ('name', 'degree', 'experience', 'phone_number', 'fees')
+    list_display = ('user', 'name', 'degree', 'experience', 'city', 'is_verified', 'rating')
     search_fields = ('name', 'top_expertise', 'city', 'hospital')
 
 @admin.register(Service)

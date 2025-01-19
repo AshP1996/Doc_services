@@ -1,5 +1,13 @@
 from rest_framework import serializers
 from .models import DoctorProfile, Service, ProfileEntity
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email']
 
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,6 +20,7 @@ class ProfileEntitySerializer(serializers.ModelSerializer):
         fields = ['id', 'entity_type', 'entity_value']
 
 class DoctorProfileSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
     services = ServiceSerializer(many=True, required=False)
     entities = ProfileEntitySerializer(many=True, required=False)
 
@@ -19,20 +28,11 @@ class DoctorProfileSerializer(serializers.ModelSerializer):
         model = DoctorProfile
         fields = '__all__'
 
-    def validate_phone_number(self, value):
-        if len(value) != 10 or not value.isdigit():
-            raise serializers.ValidationError("Phone number must be exactly 10 digits.")
-        return value
-
-    def validate_fees(self, value):
-        if value is not None and value < 0:
-            raise serializers.ValidationError("Fees must be a positive number.")
-        return value
-
     def create(self, validated_data):
         services_data = validated_data.pop('services', [])
         entities_data = validated_data.pop('entities', [])
-        doctor_profile = DoctorProfile.objects.create(**validated_data)
+        user = self.context['request'].user
+        doctor_profile = DoctorProfile.objects.create(user=user, **validated_data)
         
         for service_data in services_data:
             Service.objects.create(doctor=doctor_profile, **service_data)
@@ -44,8 +44,11 @@ class DoctorProfileSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         services_data = validated_data.pop('services', [])
         entities_data = validated_data.pop('entities', [])
-
-        instance = super().update(instance, validated_data)
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
         instance.services.all().delete()
         instance.entities.all().delete()
         
