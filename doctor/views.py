@@ -25,11 +25,14 @@ class DoctorProfileDetailView(APIView):
 
     def get(self, request, pk):
         profile = get_object_or_404(DoctorProfile, pk=pk, user=request.user)
+        print("profile for get", profile)
         serializer = DoctorProfileSerializer(profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
         profile = get_object_or_404(DoctorProfile, pk=pk, user=request.user)
+        print("profile for put", profile)
+
         serializer = DoctorProfileSerializer(profile, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
@@ -40,3 +43,12 @@ class DoctorProfileDetailView(APIView):
         profile = get_object_or_404(DoctorProfile, pk=pk, user=request.user)
         profile.delete()
         return Response({"detail": "Doctor profile deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+
+class PublicDoctorProfileDetailView(APIView):
+    permission_classes = [permissions.AllowAny]  # No authentication required
+
+    def get(self, request, pk):
+        profile = get_object_or_404(DoctorProfile, pk=pk)
+        serializer = DoctorProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
