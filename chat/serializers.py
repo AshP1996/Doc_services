@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import ChatRoom, Message
-from accounts.models import CustomUser
 
 class ChatRoomSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()

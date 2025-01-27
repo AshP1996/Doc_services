@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'dashboard',
     'corsheaders',
     # 'appointments',
-    # 'ratings_reviews',
+    'ratings_reviews',
     # 'search',
     'chat',
     # 'notifications',
